@@ -1,0 +1,10 @@
+0xvhp@im0rtal:~/Nightmare/ROP/XCTF$ /opt/checksec.sh/checksec --file=boverflow
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified       Fortifiable  FILE
+Partial RELRO   No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   74 Symbols     No       0               2       boverflow
+0xvhp@im0rtal:~/Nightmare/ROP/XCTF
+
+gef➤  pattern search 0x6161616a
+[+] Searching '0x6161616a'
+[+] Found at offset 36 (little-endian search) likely
+[+] Found at offset 33 (big-endian search)
+gef➤

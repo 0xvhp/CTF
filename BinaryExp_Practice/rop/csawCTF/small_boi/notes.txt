@@ -1,0 +1,13 @@
+0xvhp@im0rtal:~/Nightmare/ROP/csawCTF/small_boi$ /opt/checksec.sh/checksec --file=small_boi
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified       Fortifiable  FILE
+No RELRO        No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   No Symbols      No      0               0       small_boi
+0xvhp@im0rtal:~/Nightmare/ROP/csawCTF/small_boi$
+
+0x00000000004001ac in ?? ()
+gef➤  x/gx $rsp
+0x7fffffffe410: 0x6161616161616166
+gef➤  pattern search 0x6161616161616166
+[+] Searching '0x6161616161616166'
+[+] Found at offset 40 (little-endian search) likely
+[+] Found at offset 33 (big-endian search)
+gef➤
